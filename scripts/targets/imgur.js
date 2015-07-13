@@ -3,7 +3,7 @@ elation.require(["share.targets.oauth"], function() {
     this.init = function() {
       elation.share.targets.imgur.extendclass.init.call(this);
       this.name = 'imgur';
-      this.method = 'iframe';
+      this.method = 'window';
       this.logo = '/images/share/targets/imgur.png';
       this.types = ['image/png', 'image/jpeg', 'image/gif', 'image/bmp', 'application/pdf', 'image/tiff'];
       this.addclass('share_picker_imgur');
