@@ -1,7 +1,7 @@
 elation.require(["share.targets.oauth"], function() {
   elation.component.add("share.targets.google", function() {
     this.init = function() {
-      elation.share.targets.flickr.extendclass.init.call(this);
+      elation.share.targets.google.extendclass.init.call(this);
       this.name = 'google';
       this.method = 'window';
       this.logo = '/images/share/targets/google-drive.png';
