@@ -5,10 +5,7 @@ elation.require(["share.targets.oauth"], function() {
       this.name = 'google';
       this.method = 'window';
       this.logo = '/images/share/targets/google-drive.png';
-      this.types = [
-        'image/png', 'image/jpeg', 'image/gif', 'image/bmp', 'application/pdf', 'image/tiff',
-        'video/mp4', 'video/avi', 'video/msvideo', 'video/quicktime', 'video/mpeg', 'video/ogg'
-      ];
+      this.types = [ '*' ];
       this.addclass('share_picker_google');
     }
     this.getAPIAuthURL = function() {
