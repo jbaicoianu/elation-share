@@ -2,7 +2,7 @@
 Elation component to simplify sharing of binary data to cloud services
 
 ## Example Usage
-### Get a base64-encoded PNG from a <canvas> and share it
+### Get a base64-encoded PNG from a ```canvas``` tag and share it
 
 ```javascript
 var sharepicker = elation.share.picker({append: document.body});
