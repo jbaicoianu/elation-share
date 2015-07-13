@@ -1,0 +1,48 @@
+.share_picker {
+  min-width: 20em;
+}
+.share_picker_imgur iframe,
+.share_picker_dropbox iframe {
+  width: 40em;
+  height: 50em;
+}
+.share_upload {
+  width: 30em;
+  box-sizing: border-box;
+  border-bottom: 1px solid #444;
+  padding: .3em .5em;
+  opacity: 1;
+}
+.share_upload_preview {
+  width: 10em;
+  display: inline-block;
+}
+.share_upload_info {
+  width: 19em;
+  padding-left: .5em;
+  box-sizing: border-box;
+}
+.share_upload.state_success {
+  background: rgba(20,80,20,.8);
+}
+.share_upload.state_failed {
+  background: rgba(80,20,20,.8);
+}
+.share_upload.state_removing {
+  background: rgba(0,0,0,0);
+  opacity: 0;
+  transition: all 2s linear;
+}
+.ui_list_item.share_picker_target {
+  line-height: 70px;
+  border: 1px solid black;
+}
+.ui_list_item.share_picker_target:hover {
+  border: 1px solid goldenrod;
+  cursor: pointer;
+}
+.share_picker_target_logo {
+  width: 120px;
+  max-height: 70px;
+  vertical-align: middle;
+}
