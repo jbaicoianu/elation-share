@@ -28,9 +28,11 @@ elation.require(["share.targets.oauth"], function() {
       return 'https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart';
     }
     this.getAPIData = function(data) {
+
+      var filedata = this.getFileData(data);
       return {
         metadata: new Blob([JSON.stringify({title: data.name})], { type: 'application/json' }),
-        media: new Blob([this.base64ToUint8Array(data.image).buffer], { type: 'image/png' }),
+        media: new Blob([filedata.buffer], { type: data.type }),
       };
     }
   }, elation.share.targets.oauth);

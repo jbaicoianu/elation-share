@@ -24,8 +24,9 @@ console.log('new share target', sharetarget);
       }
 */
     }
-    this.share = function(mimetype, data) {
+    this.share = function(data) {
       this.show();
+      var mimetype = data.type;
       this.getActiveTargetForType(mimetype).then(elation.bind(this, function(target) {
         this.setcontent(target);
         target.share(data);
@@ -38,7 +39,6 @@ console.log('new share target', sharetarget);
           resolve(this.activetargets[type]);
         } else {
           this.showTargetSelector(type).then(elation.bind(this, function(target) {
-            console.log('I chose a target I guess, it was ', target);
             this.setActiveTarget(type, target);
             resolve(target);
             this.refresh();
@@ -113,7 +113,26 @@ console.log('new share target', sharetarget);
       
       this.addclass('share_upload');
       this.panel = elation.ui.panel({append: this, orientation: 'horizontal'});
-      this.preview = elation.ui.image({append: this.panel, src: 'data:image/png;base64,' + this.data.image, classname: 'share_upload_preview'});
+      var mimetype = this.data.type;
+      var img = this.data.image;
+      var imagesrc = 'about:blank';
+      this.progressdata = [];
+      this.progresscount = 0;
+      
+      if (img instanceof Blob) {
+        imagesrc = URL.createObjectURL(img);
+      } else if (img instanceof Uint8Array) {
+        imagesrc = 'data:' + mimetype + ';base64,';// + btoa(String.fromCharCode.apply(null, this.data.image));
+        var chunksize = 3000;
+        var chunks = Math.ceil(this.data.image.length / chunksize);
+        var img = this.data.image;
+        for (var i = 0; i < chunks; i++) {
+          imagesrc += btoa(String.fromCharCode.apply(null, img.subarray(i * chunksize, (i + 1) * chunksize)));
+        }
+      } else {
+        imagesrc = 'data:' + mimetype + ';base64,' + this.data.image;
+      }
+      this.preview = elation.ui.image({append: this.panel, src: imagesrc, classname: 'share_upload_preview'});
       this.infopanel = elation.ui.panel({append: this.panel, orientation: 'vertical', classname: 'share_upload_info'});
       this.progressbar = elation.ui.progressbar({append: this.infopanel, classname: 'share_upload_progress'});
       this.status = elation.ui.label({append: this.infopanel, classname: 'share_upload_status'});
@@ -129,11 +148,44 @@ console.log('new share target', sharetarget);
         onerror: elation.bind(this, this.share_error)
       });
     }
+    this.getAverageSpeed = function() {
+      var sum = 0;
+      for (var i = 1; i < this.progressdata.length; i++) {
+        var prev = this.progressdata[i-1];
+        var curr = this.progressdata[i];
+        if (prev && curr) {
+          var sizediff = curr.loaded - prev.loaded;
+          var timediff = (curr.timeStamp - prev.timeStamp) / 1000;
+          sum += sizediff / timediff;
+        }
+      }
+      var speed = sum / (this.progressdata.length - 1);
+      var unit = 'B';
+      if (speed > 1024) {
+        speed /= 1024;
+        unit = 'K';
+      } 
+      if (speed > 1024) {
+        speed /= 1024;
+        unit = 'M';
+      } 
+      if (speed > 1024) {
+        speed /= 1024;
+        unit = 'G';
+      } 
+      if (speed) {
+        return speed.toFixed(1) + ' ' + unit + '/s';
+      }
+      return '';
+    }
     this.share_progress = function(ev) {
       var percent = ev.loaded / ev.total;
-      //console.log('share progress:', percent);
+      this.progressdata.push(ev);
+      if (this.progressdata.length > 5) this.progressdata.shift();
+
       if (percent < 1) {
         this.progressbar.set(percent);
+        this.status.setlabel("uploading..." + this.getAverageSpeed());
       } else {
         this.progressbar.set(1);
         //this.progressbar.hide();

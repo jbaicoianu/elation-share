@@ -20,8 +20,7 @@ elation.require(["share.targets.oauth"], function() {
       return 'https://api-content.dropbox.com/1/files_put/auto/' + data.name;
     }
     this.getAPIData = function(data) {
-      var bindata = this.base64ToUint8Array(data.image);
-      return bindata;
+      return this.getFileData(data);
     }
   }, elation.share.targets.oauth);
 });

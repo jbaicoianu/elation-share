@@ -13,16 +13,24 @@ elation.require(["share.targets.oauth"], function() {
         client_id: this.clientid,
         response_type: 'token',
       };
-      return "https://api.imgur.com/oauth2/authorize?" + elation.utils.encodeURLParams(authargs);
+      return document.location.protocol + "//api.imgur.com/oauth2/authorize?" + elation.utils.encodeURLParams(authargs);
     }
     this.getAPIUploadURL = function(data) {
       return 'https://api.imgur.com/3/image';
     }
     this.getAPIData = function(data) {
+      var imgdata = data.image;
+      var img = false;
+      if (imgdata instanceof Blob) {
+        img = imgdata;
+      } else if (imgdata instanceof Uint8Array) {
+        img = new Blob([imgdata.buffer], { type: data.type });
+      }
       return {
-        image: new Blob([this.base64ToUint8Array(data.image).buffer], { type: 'image/png' }),
+        image: img,
         type: 'file',
-        name: data.name
+        name: data.name,
+        animated: data.animated || false
       };
     }
   }, elation.share.targets.oauth);

@@ -55,9 +55,15 @@ console.log('load happened', ev, this);
     this.getAPIData = function(data) {
       return data;
     }
+    this.getFileData = function(data) {
+      var bindata = data.image;
+      if (!bindata instanceof Uint8Array && data.encoding == 'base64') {
+        var bindata = this.base64ToUint8Array(data.image);
+      }
+      return bindata;
+    }
     this.auth = function() {
       var authurl = this.getAPIAuthURL();
-      console.log('auth at', authurl);
       if (authurl) {
         if (this.method == 'iframe') {
           if (!this.iframe) {
@@ -75,7 +81,7 @@ console.log('load happened', ev, this);
     }
     this.share = function(data, type) {
       if (!this.token) {
-        console.log('tried to share the data but not authed yet', data);
+        console.log('tried to share the data but not authed yet', data, this);
         this.auth();
         elation.events.add(this, 'token_update', elation.bind(this, this.share, data));
       } else {
@@ -118,6 +124,13 @@ console.log('load happened', ev, this);
     }
     this.refresh = function() {
       elation.events.fire({element: this, type: 'content_update'});
+    }
+    this.stringToUint8Array = function(str) {
+      var arr = new Uint8Array(str.length);
+      for (var i = 0; i < str.length; i++) {
+        arr[i] = str.charCodeAt(i);
+      }
+      return arr;
     }
     this.base64ToUint8Array = function(base64) {
       var binary_string =  window.atob(base64),
