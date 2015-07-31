@@ -12,9 +12,11 @@ elation.require(["share.targets.oauth"], function() {
       var authargs = {
         client_id: this.args.clientid,
         response_type: 'token',
-        scope: 'https://www.googleapis.com/auth/drive.file',
         redirect_uri: 'https://' + document.location.host + '/share?target=google',
       };
+      if (this.authscope) {
+        authargs.scope = 'https://www.googleapis.com/auth/' + this.authscope;
+      }
       return "https://accounts.google.com/o/oauth2/auth?" + elation.utils.encodeURLParams(authargs);
     }
     this.getAPIHeaders = function(data) {
@@ -23,17 +25,6 @@ elation.require(["share.targets.oauth"], function() {
         Accept: '*'
       };
       return headers;
-    }
-    this.getAPIUploadURL = function(data) {
-      return 'https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart';
-    }
-    this.getAPIData = function(data) {
-
-      var filedata = this.getFileData(data);
-      return {
-        metadata: new Blob([JSON.stringify({title: data.name})], { type: 'application/json' }),
-        media: new Blob([filedata.buffer], { type: data.type }),
-      };
     }
   }, elation.share.targets.oauth);
 });
