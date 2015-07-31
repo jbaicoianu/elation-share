@@ -5,7 +5,8 @@ elation.require(["ui.window", "ui.grid", "ui.iframe", "ui.slider", "ui.label", "
     this.init = function() {
       this.addclass('share_picker');
       this.args.bottom = true;
-      this.args.right = true;
+      this.args.center = true;
+      this.args.resizable = false;
       this.initUIWindow();
       this.targets = [];
       this.activetargets = {};
@@ -97,7 +98,8 @@ console.log('new share target', sharetarget);
         this.accesstokens[target] = urlinfo.hashargs.access_token;
         if (window.opener) {
           window.opener.elation.events.fire({element: window.opener, type: 'share_handler_token', data: { target: target, access_token: this.accesstokens[target] } });
-          window.close();
+console.log('doop', this, target);
+          //window.close();
         }
       }
     }
@@ -109,7 +111,7 @@ console.log('new share target', sharetarget);
   elation.component.add('share.upload', function() {
     this.init = function() {
       this.data = this.args.data;
-      this.apidata = this.args.apidata;
+      //this.apidata = this.args.apidata;
       
       this.addclass('share_upload');
       this.panel = elation.ui.panel({append: this, orientation: 'horizontal'});
@@ -141,12 +143,31 @@ console.log('new share target', sharetarget);
       this.progressbar.show();
       this.status.setlabel("uploading...");
 
-      elation.net.post(this.args.url, this.apidata, { 
-        headers: this.args.headers, 
-        onload: elation.bind(this, this.share_success),
-        onprogress: elation.bind(this, this.share_progress),
-        onerror: elation.bind(this, this.share_error)
-      });
+      this.pendingrequests = this.args.requests;
+      this.nextRequest();
+    }
+    this.nextRequest = function() {
+      if (this.pendingrequests.length > 0) {
+        var request = this.pendingrequests.shift();
+console.log('process request', request);
+        if (request.type == 'GET') {
+        } else if (request.type == 'POST') {
+          elation.net.post(request.url, request.data, { 
+            headers: request.headers, 
+            onload: elation.bind(this, this.share_success),
+            onprogress: elation.bind(this, this.share_progress),
+            onerror: elation.bind(this, this.share_error)
+          });
+        } else if (request.type == 'PUT') {
+          elation.net.put(request.url, request.data, { 
+            headers: request.headers, 
+            onload: elation.bind(this, this.share_success),
+            onprogress: elation.bind(this, this.share_progress),
+            onerror: elation.bind(this, this.share_error)
+          });
+        } else if (request.type == 'DELETE') {
+        }
+      }
     }
     this.getAverageSpeed = function() {
       var sum = 0;
@@ -193,13 +214,22 @@ console.log('new share target', sharetarget);
       }
     }
     this.share_success = function(ev) {
-      console.log('share success:', ev);
+      //console.log('share success:', ev, ev.target.getResponseHeader('Location'));
       // FIXME - sometimes we get a response but the JSON data indicates failure.  This needs per-target parsing
-      var response = JSON.parse(ev.target.response);
+      //var response = JSON.parse(ev.target.response);
       //this.status.setlabel('<a href="' + response.data.link + '" target="_blank">' + response.data.link + '</a>');
-      this.status.setlabel('done');
-      this.addclass('state_success');
-      elation.events.fire({element: this, type: 'upload_complete'});
+      if (this.pendingrequests.length > 0) {
+        var location = ev.target.getResponseHeader('Location');
+        if (location) {
+console.log('NEW LOC', location);
+          this.pendingrequests[0].url = location;
+        }
+        this.nextRequest();
+      } else {
+        this.status.setlabel('done');
+        this.addclass('state_success');
+        elation.events.fire({element: this, type: 'upload_complete'});
+      }
     }
     this.share_error = function(ev) {
       console.log('share error:', ev);
