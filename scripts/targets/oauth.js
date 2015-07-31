@@ -16,13 +16,14 @@ elation.require(["ui.base"], function() {
       return (this.types.indexOf('*') != -1 || this.types.indexOf(type) != -1);
     }
     this.handleIframeLoad = function(ev) {
-console.log('load happened', ev, this);
+      console.log('load happened', ev, this);
       if (this.iframe.contentWindow) {
         var authed = false;
         try {
           var sharehandler = this.iframe.contentWindow.elation.share.handler(0);
           if (sharehandler) {
             var token = sharehandler.access_token;
+console.log('got a token', token);
             authed = true;
             this.token = token;
             elation.events.fire({element: this, type: 'token_update', data: token});
@@ -62,6 +63,15 @@ console.log('load happened', ev, this);
       }
       return bindata;
     }
+    this.getAPIUploadRequests = function(data) {
+      var posturl = this.getAPIUploadURL(data),
+          apidata = this.getAPIData(data),
+          headers = elation.utils.merge(this.getAPIHeaders(data), this.getAPIUploadHeaders(data));
+      var requests = [
+        { type: 'POST', url: posturl, data: apidata, headers: headers }
+      ];
+      return requests;
+    }
     this.auth = function() {
       var authurl = this.getAPIAuthURL();
       if (authurl) {
@@ -85,16 +95,13 @@ console.log('load happened', ev, this);
         this.auth();
         elation.events.add(this, 'token_update', elation.bind(this, this.share, data));
       } else {
-        var posturl = this.getAPIUploadURL(data),
-            apidata = this.getAPIData(data),
-            headers = elation.utils.merge(this.getAPIHeaders(data), this.getAPIUploadHeaders(data));
-        if (posturl) {
-          var upload = elation.share.upload({data: data, apidata: apidata, url: posturl, headers: headers, append: this});
-          this.uploads.push(upload);
-          elation.events.add(upload, 'upload_complete', elation.bind(this, this.upload_complete));
-          elation.events.add(upload, 'upload_failed', elation.bind(this, this.upload_failed));
-          this.refresh();
-        }
+        var requests = this.getAPIUploadRequests(data);
+console.log('SHARE IT', requests);
+        var upload = elation.share.upload({data: data, requests: requests, append: this});
+        this.uploads.push(upload);
+        elation.events.add(upload, 'upload_complete', elation.bind(this, this.upload_complete));
+        elation.events.add(upload, 'upload_failed', elation.bind(this, this.upload_failed));
+        this.refresh();
       }
     } 
     this.upload_complete = function(ev) {
@@ -117,10 +124,10 @@ console.log('load happened', ev, this);
       }
     }
     this.handle_new_token = function(ev) {
-      if (ev.data.target == this.name) {
+      //if (ev.data.target == this.name) {
         this.token = ev.data.access_token;
         elation.events.fire({element: this, type: 'token_update', data: this.token});
-      }
+      //}
     }
     this.refresh = function() {
       elation.events.fire({element: this, type: 'content_update'});
