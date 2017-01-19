@@ -4,8 +4,8 @@ elation.require(["share.targets.google"], function() {
       elation.share.targets.youtube.extendclass.init.call(this);
       this.name = 'youtube';
       this.method = 'window';
-      this.logo = '/images/share/targets/youtube.png';
-      this.types = [ '*' ];
+      this.logo = 'youtube.png';
+      this.types = [ 'video/mp4' ];
       this.authscope = 'youtube';
       this.addclass('share_picker_youtube');
     }

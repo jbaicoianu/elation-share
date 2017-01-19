@@ -4,7 +4,7 @@ elation.require(["share.targets.google"], function() {
       elation.share.targets.googledrive.extendclass.init.call(this);
       this.name = 'googledrive';
       this.method = 'window';
-      this.logo = '/images/share/targets/google-drive.png';
+      this.logo = 'google-drive.png';
       this.types = [ '*' ];
       this.authscope = 'drive.file';
       this.addclass('share_picker_googledrive');
@@ -17,7 +17,7 @@ elation.require(["share.targets.google"], function() {
 console.log('file data', filedata);
       return {
         metadata: new Blob([JSON.stringify({title: data.name})], { type: 'application/json' }),
-        media: filedata
+        media: new Blob([filedata], { type: 'application/octet-stream' })
       };
     }
   }, elation.share.targets.google);

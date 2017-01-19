@@ -86,7 +86,12 @@ console.log('new share target', sharetarget);
     this.init = function() {
       elation.share.pickertargetlistitem.extendclass.init.call(this);
       this.addclass('share_picker_target');
-      this.img = elation.ui.image({append: this, src: this.args.logo, classname: 'share_picker_target_logo'});
+      var logo = this.getLogoURL(this.args.logo);
+      this.img = elation.ui.image({append: this, src: logo, classname: 'share_picker_target_logo'});
+    }
+    this.getLogoURL = function(url) {
+      var fullurl = elation.config.get('share.imagebase', '/images/share/targets/') + url;
+      return fullurl;
     }
   }, elation.ui.base);
   elation.component.add("share.handler", function() {

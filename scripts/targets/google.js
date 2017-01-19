@@ -4,7 +4,7 @@ elation.require(["share.targets.oauth"], function() {
       elation.share.targets.google.extendclass.init.call(this);
       this.name = 'google';
       this.method = 'window';
-      this.logo = '/images/share/targets/google-drive.png';
+      this.logo = 'google-drive.png';
       this.types = [ '*' ];
       this.addclass('share_picker_google');
     }

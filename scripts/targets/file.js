@@ -3,7 +3,7 @@ elation.require(["ui.base"], function() {
     this.init = function() {
       this.name = 'file';
       this.method = 'window';
-      this.logo = '/images/share/targets/file.png';
+      this.logo = 'file.png';
       this.types = ['*'];
 
       this.addclass('share_picker_file');

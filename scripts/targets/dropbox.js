@@ -4,7 +4,7 @@ elation.require(["share.targets.oauth"], function() {
       elation.share.targets.dropbox.extendclass.init.call(this);
       this.name = 'dropbox';
       this.method = 'window';
-      this.logo = '/images/share/targets/dropbox.png';
+      this.logo = 'dropbox.png';
       this.types = ['*'];
       this.addclass('share_picker_dropbox');
     }
