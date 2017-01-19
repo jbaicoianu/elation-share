@@ -98,8 +98,7 @@ console.log('new share target', sharetarget);
         this.accesstokens[target] = urlinfo.hashargs.access_token;
         if (window.opener) {
           window.opener.elation.events.fire({element: window.opener, type: 'share_handler_token', data: { target: target, access_token: this.accesstokens[target] } });
-console.log('doop', this, target);
-          //window.close();
+          window.close();
         }
       }
     }
