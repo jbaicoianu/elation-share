@@ -14,10 +14,13 @@ elation.require(["share.targets.google"], function() {
     }
     this.getAPIData = function(data) {
       var filedata = this.getFileData(data);
+      if (filedata instanceof Uint8Array) {
+        filedata = new Blob([filedata.buffer], {type: data.type});
+      }
 console.log('file data', filedata);
       return {
         metadata: new Blob([JSON.stringify({title: data.name})], { type: 'application/json' }),
-        media: new Blob([filedata], { type: 'application/octet-stream' })
+        media: filedata
       };
     }
   }, elation.share.targets.google);

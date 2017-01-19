@@ -17,7 +17,13 @@ elation.require(["ui.base"], function() {
       var a = document.createElement('A');
       a.style.display = 'none';
       document.body.appendChild(a);
-      var url = window.URL.createObjectURL(data.image);
+
+      var imgdata = data.image;
+      if (imgdata instanceof Uint8Array) {
+        imgdata = new Blob([imgdata.buffer], {type: data.type});
+      }
+
+      var url = window.URL.createObjectURL(imgdata);
 
       a.href = url;
       a.download = data.name;
