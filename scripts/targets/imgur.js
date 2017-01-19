@@ -21,14 +21,18 @@ elation.require(["share.targets.oauth"], function() {
     this.getAPIData = function(data) {
       var imgdata = data.image;
       var img = false;
+      var type = 'file';
       if (imgdata instanceof Blob) {
         img = imgdata;
       } else if (imgdata instanceof Uint8Array) {
         img = new Blob([imgdata.buffer], { type: data.type });
+      } else if (elation.utils.isString(imgdata)) {
+        img = imgdata;
+        type = 'base64';
       }
       return {
         image: img,
-        type: 'file',
+        type: type,
         name: data.name,
         animated: data.animated || false
       };
