@@ -72,6 +72,12 @@ console.log('got a token', token);
       ];
       return requests;
     }
+    this.parseAPIResponse = function(data, file) {
+      var json = JSON.parse(data);
+      return new Promise(function(resolve, reject) {
+        resolve(json);
+      });
+    }
     this.auth = function() {
       var authurl = this.getAPIAuthURL();
       if (authurl) {
@@ -90,19 +96,21 @@ console.log('got a token', token);
       }
     }
     this.share = function(data, type) {
-      if (!this.token) {
-        console.log('tried to share the data but not authed yet', data, this);
-        this.auth();
-        elation.events.add(this, 'token_update', elation.bind(this, this.share, data));
-      } else {
-        var requests = this.getAPIUploadRequests(data);
-console.log('SHARE IT', requests);
-        var upload = elation.share.upload({data: data, requests: requests, append: this});
-        this.uploads.push(upload);
-        elation.events.add(upload, 'upload_complete', elation.bind(this, this.upload_complete));
-        elation.events.add(upload, 'upload_failed', elation.bind(this, this.upload_failed));
-        this.refresh();
-      }
+      return new Promise(elation.bind(this, function(resolve, reject) {
+        if (!this.token) {
+          //console.log('tried to share the data but not authed yet', data, this);
+          this.auth();
+          elation.events.add(this, 'token_update', elation.bind(this, this.share, data));
+        } else {
+          var requests = this.getAPIUploadRequests(data);
+          //console.log('SHARE IT', requests);
+          var upload = elation.share.upload({data: data, requests: requests, append: this, target: this});
+          this.uploads.push(upload);
+          elation.events.add(upload, 'upload_complete', elation.bind(this, function(ev) { var response = this.upload_complete(ev); resolve(upload, response); }));
+          elation.events.add(upload, 'upload_failed', elation.bind(this, function(ev) { this.upload_failed(ev); reject(upload); }));
+          this.refresh();
+        }
+      }));
     } 
     this.upload_complete = function(ev) {
       var upload = ev.target;
