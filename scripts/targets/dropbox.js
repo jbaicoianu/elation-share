@@ -22,5 +22,37 @@ elation.require(["share.targets.oauth"], function() {
     this.getAPIData = function(data) {
       return this.getFileData(data);
     }
+    this.parseAPIResponse = function(data, file) {
+      var json = JSON.parse(data);
+      return new Promise(elation.bind(this, function(Resolve, reject) {
+        var response = {
+          name: json.path.replace(/^\//, ''),
+          //link: json.link,
+          type: json.mime_type,
+          size: json.bytes,
+          timestamp: Date.parse(json.modified) / 1000,
+        };
+        /*
+        this.getTemporaryLink(json.path).then(function(link) {
+          response.link = link;
+          resolve(response);
+        });
+        */
+      }));
+    }
+    this.getTemporaryLink = function(path) {
+      return new Promise(elation.bind(this, function(resolve, reject) {
+        var apiurl = "https://www.dropbox.com/2/files/get_temporary_link";
+        var postdata = { path: path };
+        elation.net.post(apiurl, postdata, {
+          headers: this.getAPIHeaders(),
+          callback: function(data) {
+            console.log(data);
+            var json = JSON.parse(data); 
+            resolve(json.link);
+          }
+        });
+      })); 
+    }
   }, elation.share.targets.oauth);
 });
