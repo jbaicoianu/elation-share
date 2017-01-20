@@ -37,5 +37,19 @@ elation.require(["share.targets.oauth"], function() {
         animated: data.animated || false
       };
     }
+    this.parseAPIResponse = function(data, file) {
+      var json = JSON.parse(data);
+      return new Promise(function(resolve, reject) {
+        var response = {
+          name: json.data.name,
+          link: json.data.link,
+          type: json.data.type,
+          size: json.data.size,
+          title: json.data.title,
+          timestamp: json.data.datetime,
+        };
+        resolve(response);
+      });
+    }
   }, elation.share.targets.oauth);
 });
