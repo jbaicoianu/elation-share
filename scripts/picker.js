@@ -1,6 +1,6 @@
 elation.requireCSS('share.share');
 
-elation.require(["ui.window", "ui.grid", "ui.iframe", "ui.slider", "ui.label", "ui.image"], function() {
+elation.require(["ui.window", "ui.grid", "ui.iframe", "ui.slider", "ui.label", "ui.image", "ui.link"], function() {
   elation.component.add("share.picker", function() {
     this.init = function() {
       this.addclass('share_picker');
@@ -26,12 +26,20 @@ console.log('new share target', sharetarget);
 */
     }
     this.share = function(data) {
-      this.show();
-      var mimetype = data.type;
-      this.getActiveTargetForType(mimetype).then(elation.bind(this, function(target) {
-        this.setcontent(target);
-        target.share(data);
-        this.refresh();
+      return new Promise(elation.bind(this, function(resolve, reject) {
+        this.show();
+        var mimetype = data.type;
+        this.getActiveTargetForType(mimetype).then(elation.bind(this, function(target) {
+          this.setcontent(target);
+          target.share(data).then(function(upload) {
+            console.log('yeah got it', upload);
+            resolve(upload, target);
+          }, function(upload) { 
+            console.log('oh no!', upload); 
+            reject(upload, target);
+          });
+          this.refresh();
+        }));
       }));
     }
     this.getActiveTargetForType = function(type) {
@@ -61,7 +69,7 @@ console.log('new share target', sharetarget);
       }
       return targets;
     }
-    this.showTargetSelector = function(type) {
+    this.showTargetSelector = function(type, append) {
       return new Promise(elation.bind(this, function(resolve, reject) {
         var targets = this.getTargetsForType(type);
         var panel = elation.ui.panel({orientation: 'vertical'});
@@ -75,7 +83,11 @@ console.log('new share target', sharetarget);
           attrs: { itemcomponent: 'share.pickertargetlistitem' },
           events: { ui_list_select: function(ev) { resolve(ev.target.value); panel.hide(); } }
          });
-        this.setcontent(panel);
+        if (append) { 
+          append.add(panel);
+        } else {
+          this.setcontent(panel);
+        }
       }));
     }
     this.update_content = function() {
@@ -115,6 +127,7 @@ console.log('new share target', sharetarget);
   elation.component.add('share.upload', function() {
     this.init = function() {
       this.data = this.args.data;
+      this.target = this.args.target;
       //this.apidata = this.args.apidata;
       
       this.addclass('share_upload');
@@ -138,10 +151,15 @@ console.log('new share target', sharetarget);
       } else {
         imagesrc = 'data:' + mimetype + ';base64,' + this.data.image;
       }
-      this.preview = elation.ui.image({append: this.panel, src: imagesrc, classname: 'share_upload_preview'});
+      this.link = elation.ui.link({append: this.panel, href: '..', classname: 'share_upload_link'});
+      this.preview = elation.ui.image({append: this.link, src: imagesrc, classname: 'share_upload_preview'});
       this.infopanel = elation.ui.panel({append: this.panel, orientation: 'vertical', classname: 'share_upload_info'});
       this.progressbar = elation.ui.progressbar({append: this.infopanel, classname: 'share_upload_progress'});
       this.status = elation.ui.label({append: this.infopanel, classname: 'share_upload_status'});
+      if (this.target) {
+        var targetlogo = elation.config.get('share.imagebase', '/images/share/targets/') + this.target.logo;
+        this.logo = elation.ui.image({append: this.infopanel, classname: 'share_upload_logo', src: targetlogo});
+      }
 
       this.progressbar.set(0);
       this.progressbar.show();
@@ -231,6 +249,10 @@ console.log('NEW LOC', location);
         this.nextRequest();
       } else {
         this.status.setlabel('done');
+        this.target.parseAPIResponse(ev.target.response, this).then(elation.bind(this, function(response) {
+          this.link.href = response.link;
+          this.status.setlabel('<a href="' + response.link + '" target="_blank">' + response.link + '</a>');
+        }));
         this.addclass('state_success');
         elation.events.fire({element: this, type: 'upload_complete'});
       }
