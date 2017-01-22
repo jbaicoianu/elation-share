@@ -169,26 +169,32 @@ console.log('new share target', sharetarget);
       this.nextRequest();
     }
     this.nextRequest = function() {
-      if (this.pendingrequests.length > 0) {
-        var request = this.pendingrequests.shift();
-console.log('process request', request);
-        if (request.type == 'GET') {
-        } else if (request.type == 'POST') {
-          elation.net.post(request.url, request.data, { 
-            headers: request.headers, 
-            onload: elation.bind(this, this.share_success),
-            onprogress: elation.bind(this, this.share_progress),
-            onerror: elation.bind(this, this.share_error)
-          });
-        } else if (request.type == 'PUT') {
-          elation.net.put(request.url, request.data, { 
-            headers: request.headers, 
-            onload: elation.bind(this, this.share_success),
-            onprogress: elation.bind(this, this.share_progress),
-            onerror: elation.bind(this, this.share_error)
-          });
-        } else if (request.type == 'DELETE') {
+      if (this.pendingrequests) {
+        if (this.pendingrequests.length > 0) {
+          var request = this.pendingrequests.shift();
+          if (request.type == 'GET') {
+          } else if (request.type == 'POST') {
+            elation.net.post(request.url, request.data, { 
+              headers: request.headers, 
+              onload: elation.bind(this, this.share_success),
+              onprogress: elation.bind(this, this.share_progress),
+              onerror: elation.bind(this, this.share_error)
+            });
+          } else if (request.type == 'PUT') {
+            elation.net.put(request.url, request.data, { 
+              headers: request.headers, 
+              onload: elation.bind(this, this.share_success),
+              onprogress: elation.bind(this, this.share_progress),
+              onerror: elation.bind(this, this.share_error)
+            });
+          } else if (request.type == 'DELETE') {
+          }
         }
+      } else {
+        setTimeout(elation.bind(this, function() {
+          this.share_progress({loaded: 1, total: 1});
+          this.share_success();
+        }), 0);
       }
     }
     this.getAverageSpeed = function() {
@@ -240,7 +246,7 @@ console.log('process request', request);
       // FIXME - sometimes we get a response but the JSON data indicates failure.  This needs per-target parsing
       //var response = JSON.parse(ev.target.response);
       //this.status.setlabel('<a href="' + response.data.link + '" target="_blank">' + response.data.link + '</a>');
-      if (this.pendingrequests.length > 0) {
+      if (this.pendingrequests && this.pendingrequests.length > 0) {
         var location = ev.target.getResponseHeader('Location');
         if (location) {
 console.log('NEW LOC', location);
@@ -249,10 +255,12 @@ console.log('NEW LOC', location);
         this.nextRequest();
       } else {
         this.status.setlabel('done');
-        this.target.parseAPIResponse(ev.target.response, this).then(elation.bind(this, function(response) {
-          this.link.href = response.link;
-          this.status.setlabel('<a href="' + response.link + '" target="_blank">' + response.link + '</a>');
-        }));
+        if (ev && ev.target) {
+          this.target.parseAPIResponse(ev.target.response, this).then(elation.bind(this, function(response) {
+            this.link.href = response.link;
+            this.status.setlabel('<a href="' + response.link + '" target="_blank">' + response.link + '</a>');
+          }));
+        }
         this.addclass('state_success');
         elation.events.fire({element: this, type: 'upload_complete'});
       }
