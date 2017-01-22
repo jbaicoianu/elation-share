@@ -1,19 +1,11 @@
-elation.require(["ui.base"], function() {
+elation.require(["share.targets.base"], function() {
   elation.component.add("share.targets.oauth", function() {
     this.init = function() {
-      this.name = '';
-      this.logo = '';
+      elation.share.targets.oauth.extendclass.init.call(this);
+
       this.method = 'window';
-      this.types = [];
-      this.uploads = [];
-      this.finished = [];
-      this.failed = [];
       this.clientid = this.args.clientid;
       this.token = false;
-    }
-    this.supportsType = function(type) {
-      // TODO - need to support wildcards for real
-      return (this.types.indexOf('*') != -1 || this.types.indexOf(type) != -1);
     }
     this.handleIframeLoad = function(ev) {
       console.log('load happened', ev, this);
@@ -55,13 +47,6 @@ console.log('got a token', token);
     }
     this.getAPIData = function(data) {
       return data;
-    }
-    this.getFileData = function(data) {
-      var bindata = data.image;
-      if (!bindata instanceof Uint8Array && data.encoding == 'base64') {
-        var bindata = this.base64ToUint8Array(data.image);
-      }
-      return bindata;
     }
     this.getAPIUploadRequests = function(data) {
       var posturl = this.getAPIUploadURL(data),
@@ -140,23 +125,5 @@ console.log('got a token', token);
     this.refresh = function() {
       elation.events.fire({element: this, type: 'content_update'});
     }
-    this.stringToUint8Array = function(str) {
-      var arr = new Uint8Array(str.length);
-      for (var i = 0; i < str.length; i++) {
-        arr[i] = str.charCodeAt(i);
-      }
-      return arr;
-    }
-    this.base64ToUint8Array = function(base64) {
-      var binary_string =  window.atob(base64),
-          len = binary_string.length,
-          bytes = new Uint8Array(len),
-          i;
-
-      for (i = 0; i < len; i++) {
-        bytes[i] = binary_string.charCodeAt(i);
-      }
-      return bytes;
-    }
-  }, elation.ui.base);
+  }, elation.share.targets.base);
 });
