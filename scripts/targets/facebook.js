@@ -8,6 +8,9 @@ elation.require(["share.targets.base"], function() {
       this.clientid = this.args.clientid;
       this.initialized = false;
       this.authResponse = false;
+
+      this.uploads = [];
+      this.finished = [];
     }
 
     this.auth = function() {
@@ -75,17 +78,43 @@ elation.require(["share.targets.base"], function() {
         })
       }));
     }
+    this.getAPIData = function(data) {
+      var datablob = this.Uint8ArrayToBlob(data.image, data.type);
+      var formdata = new FormData();
+      formdata.append("source", datablob);
+      formdata.append("caption",data.name);
+      formdata.append("published",true);
+      formdata.append("temporary",false);
+      formdata.append("no_story",true);
+
+      return formdata;
+    }
+    this.getAPIUploadURL = function(data) {
+      var url = 'https://graph.facebook.com/me/photos?access_token=' + this.authResponse.accessToken;
+      return url;
+    }
+    this.getAPIUploadRequests = function(data) {
+      var posturl = this.getAPIUploadURL(data),
+          apidata = this.getAPIData(data),
+          headers = {}; //elation.utils.merge(this.getAPIHeaders(data), this.getAPIUploadHeaders(data));
+      var requests = [
+        { type: 'POST', url: posturl, data: apidata, headers: headers }
+      ];
+      return requests;
+    }
     this.uploadImage = function(data) {
       return new Promise(elation.bind(this, function(resolve, reject) {
-        var datablob = this.Uint8ArrayToBlob(data.image, data.type);
-        var formdata = new FormData();
-        //formdata.append("access_token", this.authResponse.accessToken);
-        formdata.append("source", datablob);
-        formdata.append("caption",data.name);
-        formdata.append("published",true);
-        formdata.append("temporary",false);
-        formdata.append("no_story",true);
 
+        var requests = this.getAPIUploadRequests(data);
+
+        var upload = elation.share.upload({data: data, requests: requests, append: this, target: this});
+        this.uploads.push(upload);
+        elation.events.add(upload, 'upload_complete', elation.bind(this, function(ev) { var response = this.upload_complete(ev); resolve(upload, response); }));
+        elation.events.add(upload, 'upload_failed', elation.bind(this, function(ev) { this.upload_failed(ev); reject(upload); }));
+        this.refresh();
+        upload.refresh();
+
+/*
         elation.net.post('https://graph.facebook.com/me/photos?access_token=' + this.authResponse.accessToken, formdata, {
           callback: function(data) {
             // TODO - we need to create the proper objects and pass them here
@@ -96,8 +125,34 @@ elation.require(["share.targets.base"], function() {
             }
           }
         }); 
+*/
       }));
         
+    }
+    this.upload_complete = function(ev) {
+      var upload = ev.target;
+      var idx = this.uploads.indexOf(upload);
+      if (idx != -1) {
+        this.uploads.splice(idx, 1);
+        this.finished.push(upload);
+
+        setTimeout(elation.bind(this, function(upload) { upload.addclass('state_removing'); }, upload), 4000);
+        setTimeout(elation.bind(this, function(upload) { upload.reparent(false); this.refresh(); if (this.uploads.length == 0) elation.events.fire({element: this, type: 'content_hide'}); }, upload), 6000);
+      }
+    }
+    this.upload_failed = function(ev) {
+      var upload = ev.target;
+      var idx = this.uploads.indexOf(upload);
+      if (idx != -1) {
+        this.uploads.splice(idx, 1);
+        this.failed.push(upload);
+      }
+    }
+    this.parseAPIResponse = function(data, file) {
+      var json = JSON.parse(data);
+      return new Promise(function(resolve, reject) {
+        resolve(json);
+      });
     }
   }, elation.share.targets.base);
 });
