@@ -257,8 +257,10 @@ console.log('NEW LOC', location);
         this.status.setlabel('done');
         if (ev && ev.target) {
           this.target.parseAPIResponse(ev.target.response, this).then(elation.bind(this, function(response) {
-            this.link.href = response.link;
-            this.status.setlabel('<a href="' + response.link + '" target="_blank">' + response.link + '</a>');
+            if (response.link) {
+              this.link.href = response.link;
+              this.status.setlabel('<a href="' + response.link + '" target="_blank">' + response.link + '</a>');
+            }
           }));
         }
         this.addclass('state_success');
