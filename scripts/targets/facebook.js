@@ -82,10 +82,10 @@ elation.require(["share.targets.base"], function() {
       var datablob = this.Uint8ArrayToBlob(data.image, data.type);
       var formdata = new FormData();
       formdata.append("source", datablob);
-      formdata.append("caption",data.name);
-      formdata.append("published",true);
-      formdata.append("temporary",false);
-      formdata.append("no_story",true);
+      formdata.append("allow_spherical_photo", true);
+      formdata.append("caption", data.name);
+      formdata.append("published", true);
+      formdata.append("temporary", false);
 
       return formdata;
     }
