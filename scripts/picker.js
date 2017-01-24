@@ -249,7 +249,6 @@ console.log('new share target', sharetarget);
       if (this.pendingrequests && this.pendingrequests.length > 0) {
         var location = ev.target.getResponseHeader('Location');
         if (location) {
-console.log('NEW LOC', location);
           this.pendingrequests[0].url = location;
         }
         this.nextRequest();
