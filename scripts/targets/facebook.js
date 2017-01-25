@@ -83,7 +83,7 @@ elation.require(["share.targets.base"], function() {
       var formdata = new FormData();
       formdata.append("source", datablob);
       formdata.append("allow_spherical_photo", true);
-      formdata.append("caption", data.name);
+      //formdata.append("caption", data.name); // Facebook says we're not actually allowed to use this parameter
       formdata.append("published", true);
       formdata.append("temporary", false);
 
