@@ -61,13 +61,17 @@ elation.require(["share.targets.base"], function() {
           resolve();
         });
 
-        (function(d, s, id){
-           var js, fjs = d.getElementsByTagName(s)[0];
-           if (d.getElementById(id)) {return;}
-           js = d.createElement(s); js.id = id;
-           js.src = "//connect.facebook.net/en_US/sdk.js";
-           fjs.parentNode.insertBefore(js, fjs);
-         }(document, 'script', 'facebook-jssdk'));
+        if (window.FB) {
+          fbAsyncInit();
+        } else {
+          (function(d, s, id){
+             var js, fjs = d.getElementsByTagName(s)[0];
+             if (d.getElementById(id)) {return;}
+             js = d.createElement(s); js.id = id;
+             js.src = "//connect.facebook.net/en_US/sdk.js";
+             fjs.parentNode.insertBefore(js, fjs);
+           }(document, 'script', 'facebook-jssdk'));
+        }
       }));
     }
     this.sharePage = function(data) {
@@ -153,6 +157,9 @@ elation.require(["share.targets.base"], function() {
       return new Promise(function(resolve, reject) {
         resolve(json);
       });
+    }
+    this.refresh = function() {
+      elation.events.fire({element: this, type: 'content_update'});
     }
   }, elation.share.targets.base);
 });
