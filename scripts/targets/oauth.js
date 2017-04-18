@@ -8,14 +8,12 @@ elation.require(["share.targets.base"], function() {
       this.token = false;
     }
     this.handleIframeLoad = function(ev) {
-      console.log('load happened', ev, this);
       if (this.iframe.contentWindow) {
         var authed = false;
         try {
           var sharehandler = this.iframe.contentWindow.elation.share.handler(0);
           if (sharehandler) {
             var token = sharehandler.access_token;
-console.log('got a token', token);
             authed = true;
             this.token = token;
             elation.events.fire({element: this, type: 'token_update', data: token});
